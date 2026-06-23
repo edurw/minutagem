@@ -3,14 +3,14 @@ import { useAuth } from '../context/AuthContext'
 interface UserAvatarProps {
   onClick: () => void
   variant?: 'sidebar' | 'topbar'
-  showName?: boolean
 }
 
-export function UserAvatar({ onClick, variant = 'topbar', showName = false }: UserAvatarProps) {
+export function UserAvatar({ onClick, variant = 'topbar' }: UserAvatarProps) {
   const { user, profile } = useAuth()
 
 
-  const photoURL = profile?.photoURL || user?.photoURL || null
+  const rawPhotoURL = profile?.photoURL || user?.photoURL || null
+  const photoURL = rawPhotoURL && rawPhotoURL.startsWith('https://') ? rawPhotoURL : null
   const displayName = profile?.name || user?.displayName || user?.email || 'U'
   const initials = displayName
     .split(' ')
@@ -44,7 +44,7 @@ export function UserAvatar({ onClick, variant = 'topbar', showName = false }: Us
   return (
     <button
       type="button"
-      className={`user-avatar-btn${showName ? ' user-avatar-btn' : ''}`}
+      className="user-avatar-btn"
       onClick={onClick}
       title={user ? (profile?.name || user.email || 'Perfil') : 'Entrar ou criar conta'}
     >
@@ -53,9 +53,6 @@ export function UserAvatar({ onClick, variant = 'topbar', showName = false }: Us
       ) : (
         <div className="user-avatar-initials">{initials}</div>
       )}
-      {/* {showName && user && (
-        <span className="user-avatar-topbar-name">{profile?.name || displayName}</span>
-      )} */}
     </button>
   )
 }

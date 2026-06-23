@@ -10,6 +10,7 @@ export function useCustomScrollbar() {
   const dragStartScrollTop = useRef(0)
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const styleElRef = useRef<HTMLStyleElement | null>(null)
+  const resizeObserversRef = useRef<Map<string, ResizeObserver>>(new Map())
 
   function injectStyles() {
     const isDark = !document.body.classList.contains('light-theme')
@@ -127,6 +128,7 @@ export function useCustomScrollbar() {
 
       const id = el.dataset.scrollId
       const scrollContent = document.createElement('div')
+
       scrollContent.className = 'custom-scrollbar-inner'
       scrollContent.style.cssText = 'height:100%;overflow-y:scroll;overflow-x:hidden;'
 
@@ -145,7 +147,15 @@ export function useCustomScrollbar() {
       thumbRef.current.set(id, thumb)
 
       // Scroll sync
-      scrollContent.addEventListener('scroll', () => updateThumb(el, thumb), { passive: true })
+      scrollContent.addEventListener('scroll', () => updateThumb(el, thumb), {
+        passive: true,
+      })
+
+      // Recalcula thumb quando conteúdo muda de tamanho
+      const ro = new ResizeObserver(() => updateThumb(el, thumb))
+      ro.observe(scrollContent)
+      ro.observe(el)
+      resizeObserversRef.current.set(id, ro)
 
       // Mouse interactions
       el.addEventListener('mouseenter', () => thumb.classList.add('visible'))
@@ -179,18 +189,55 @@ export function useCustomScrollbar() {
 
     // Observe DOM
     const mo = new MutationObserver(() => {
-      document.querySelectorAll<HTMLElement>('.tab-panel, .sidebar, .content').forEach(wrapScrollableElement)
+      document.querySelectorAll<HTMLElement>('.tab-panel, .sidebar, .content').forEach((el) => {
+        wrapScrollableElement(el)
+
+        const id = el.dataset.scrollId
+        if (!id) return
+
+        const thumb = thumbRef.current.get(id)
+        if (thumb) {
+          requestAnimationFrame(() => updateThumb(el, thumb))
+        }
+      })
     })
     mo.observe(document.body, { childList: true, subtree: true })
 
     // Initial
-    document.querySelectorAll<HTMLElement>('.tab-panel, .sidebar, .content').forEach(wrapScrollableElement)
+    document.querySelectorAll<HTMLElement>('.tab-panel, .sidebar, .content').forEach((el) => {
+      wrapScrollableElement(el)
+
+      const id = el.dataset.scrollId
+      if (!id) return
+
+      const thumb = thumbRef.current.get(id)
+      if (thumb) {
+        requestAnimationFrame(() => updateThumb(el, thumb))
+      }
+    })
 
     return () => {
       observer.disconnect()
       mo.disconnect()
       window.removeEventListener('resize', resizeAll)
-      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
+
+      // Copy refs to variables to avoid stale closure warnings
+      const rafMap = rafRef.current
+      const thumbMap = thumbRef.current
+      const roMap = resizeObserversRef.current
+
+      roMap.forEach(ro => ro.disconnect())
+      roMap.clear()
+      rafMap.clear()
+      thumbMap.clear()
+
+      if (hideTimeoutRef.current)
+        clearTimeout(hideTimeoutRef.current)
+
+      if (styleElRef.current) {
+        styleElRef.current.remove()
+        styleElRef.current = null
+      }
     }
   }, [])
 
@@ -206,7 +253,7 @@ export function useCustomScrollbar() {
         const { scrollHeight, clientHeight } = inner
         const scrollable = scrollHeight - clientHeight
         const maxThumbTop = clientHeight - SCROLLBAR_WIDTH
-        const thumbHeight = Math.max(30, clientHeight * (clientHeight / scrollHeight))
+        const thumbHeight = scrollHeight > 0 ? Math.max(30, clientHeight * (clientHeight / scrollHeight)) : 30
         const scrollableThumb = maxThumbTop - thumbHeight
         if (scrollable <= 0 || scrollableThumb <= 0) return
         const ratio = scrollable / scrollableThumb

@@ -12,6 +12,7 @@ export function ScrollArea({ children, className = '', style }: Props) {
   const [thumbHeight, setThumbHeight] = useState(0)
   const [thumbTop, setThumbTop] = useState(0)
   const [visible, setVisible] = useState(false)
+  const [needsScroll, setNeedsScroll] = useState(false)
   const isDragging = useRef(false)
   const dragStartY = useRef(0)
   const dragStartScroll = useRef(0)
@@ -20,6 +21,16 @@ export function ScrollArea({ children, className = '', style }: Props) {
   function update() {
     const el = contentRef.current
     if (!el) return
+    const scrollable = el.scrollHeight > el.clientHeight
+    setNeedsScroll(scrollable)
+
+    // Se não há scroll necessário, esconde o thumb imediatamente
+    if (!scrollable) {
+      setVisible(false)
+      clearTimeout(hideTimer.current)
+      return
+    }
+
     const BOTTOM_OFFSET = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--scrollbar-bottom').trim()) || 16
     const trackH = el.clientHeight - BOTTOM_OFFSET
     const ratio = trackH / el.scrollHeight
@@ -29,6 +40,8 @@ export function ScrollArea({ children, className = '', style }: Props) {
   }
 
   function showThumb() {
+    // Só mostra o thumb se houver conteúdo scrollável
+    if (!needsScroll) return
     setVisible(true)
     clearTimeout(hideTimer.current)
     hideTimer.current = setTimeout(() => setVisible(false), 1200)
@@ -93,7 +106,6 @@ export function ScrollArea({ children, className = '', style }: Props) {
         {children}
       </div>
 
-      {/* Thumb customizado */}
       <div
         style={{
           position: 'absolute',

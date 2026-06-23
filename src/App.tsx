@@ -248,7 +248,7 @@ function App() {
             </div>
           </div>
 
-          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+          <ScrollArea key={activeTab} style={{ flex: 1, minHeight: 0 }}>
 
           {/* ── TAB: EXIBIÇÃO ── */}
           <div className={`tab-panel${activeTab === 'exibicao' ? ' active' : ''}`}>
