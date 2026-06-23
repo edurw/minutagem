@@ -3,6 +3,7 @@ import { useTimeBank } from './hooks/useTimeBank'
 import { LiveSessionCard } from './components/LiveSessionCard'
 import { ManualEntryForm } from './components/ManualEntryForm'
 import { WeekBarChart } from './components/WeekBarChart'
+import { MonthCalendar } from './components/MonthCalendar'
 import { EntryCard } from './components/EntryCard'
 import {
   calcWorkedMinutes,
@@ -42,6 +43,7 @@ function App() {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
 
   // Theme — use React state so checkbox stays in sync
   const [isDark, setIsDark] = useState(() => {
@@ -90,6 +92,26 @@ function App() {
       return sum + worked - settings.dailyTargetMinutes
     }, 0)
   }, [entries, settings.dailyTargetMinutes])
+
+  // Group entries by month (YYYY-MM)
+  const entriesByMonth = useMemo(() => {
+    const groups: Record<string, TimeEntry[]> = {}
+    for (const entry of entries) {
+      const monthKey = entry.date.slice(0, 7) // YYYY-MM
+      if (!groups[monthKey]) groups[monthKey] = []
+      groups[monthKey].push(entry)
+    }
+    return groups
+  }, [entries])
+
+  function toggleMonth(monthKey: string) {
+    setCollapsedMonths((prev) => {
+      const next = new Set(prev)
+      if (next.has(monthKey)) next.delete(monthKey)
+      else next.add(monthKey)
+      return next
+    })
+  }
 
   // Handlers
   function handleDelete(id: string) {
@@ -142,8 +164,32 @@ function App() {
         {/* Sidebar */}
         <div className="sidebar">
           <div className="sidebar-brand">
-            <span>Minu</span>tagem
-            <small>banco de horas</small>
+            <div className="sidebar-logo">
+              <svg className="logo-dark" width="32" height="32" viewBox="0 0 48 48" role="img" aria-label="Logo Minutagem">
+                <rect x="4" y="4" width="40" height="40" rx="10" fill="#1A1F2E"/>
+                <circle cx="24" cy="22" r="12" fill="none" stroke="#4F7DF3" strokeWidth="2"/>
+                <path d="M24 22 L24 12" stroke="#4F7DF3" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M24 22 L32 27" stroke="#4F7DF3" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M24 22 L24 12 A10 10 0 0 1 32 27 Z" fill="#4F7DF3" opacity="0.15"/>
+                <circle cx="24" cy="22" r="2" fill="#34D399"/>
+                <rect x="10" y="37" width="28" height="3" rx="1.5" fill="#34D399" opacity="0.35"/>
+                <rect x="10" y="37" width="19" height="3" rx="1.5" fill="#34D399"/>
+              </svg>
+              <svg className="logo-light" width="32" height="32" viewBox="0 0 48 48" role="img" aria-label="Logo Minutagem">
+                <rect x="4" y="4" width="40" height="40" rx="10" fill="#E8ECF5"/>
+                <circle cx="24" cy="22" r="12" fill="none" stroke="#2563EB" strokeWidth="2"/>
+                <path d="M24 22 L24 12" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M24 22 L32 27" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M24 22 L24 12 A10 10 0 0 1 32 27 Z" fill="#2563EB" opacity="0.12"/>
+                <circle cx="24" cy="22" r="2" fill="#059669"/>
+                <rect x="10" y="37" width="28" height="3" rx="1.5" fill="#059669" opacity="0.3"/>
+                <rect x="10" y="37" width="19" height="3" rx="1.5" fill="#059669"/>
+              </svg>
+            </div>
+            <div className="sidebar-brand-text">
+              <span>Minu</span>tagem
+              <small>banco de horas</small>
+            </div>
           </div>
           <div
             className={`nav-item${activeTab === 'exibicao' ? ' active' : ''}`}
@@ -223,6 +269,7 @@ function App() {
               <div className="divider" />
               <div className="section-title">Esta semana</div>
               <WeekBarChart bars={weekBars} />
+              <MonthCalendar entries={entries} dailyTargetMinutes={settings.dailyTargetMinutes} />
             </div>
           </div>
 
@@ -304,15 +351,43 @@ function App() {
                 <div className="no-entries">Nenhum registro ainda. Inicie ou adicione um manualmente.</div>
               ) : (
                 <div className="history-list">
-                  {entries.map((entry) => (
-                    <EntryCard
-                      key={entry.id}
-                      entry={entry}
-                      dailyTargetMinutes={settings.dailyTargetMinutes}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  ))}
+                  {Object.entries(entriesByMonth).map(([monthKey, monthEntries]) => {
+                    const isCollapsed = collapsedMonths.has(monthKey)
+                    const monthLabel = (() => {
+                      const [year, month] = monthKey.split('-')
+                      const d = new Date(Number(year), Number(month) - 1, 1)
+                      return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                    })()
+                    const monthBalance = monthEntries.reduce((sum, e) => {
+                      const worked = calcWorkedMinutes(e.startTime, e.endTime, e.lunchMinutes)
+                      return sum + worked - settings.dailyTargetMinutes
+                    }, 0)
+                    return (
+                      <div key={monthKey} className="month-group">
+                        <button
+                          type="button"
+                          className="month-header"
+                          onClick={() => toggleMonth(monthKey)}
+                        >
+                          <i className={`ti ${isCollapsed ? 'ti-chevron-right' : 'ti-chevron-down'}`} />
+                          <span className="month-label">{monthLabel}</span>
+                          <span className="month-count">{monthEntries.length} registro{monthEntries.length !== 1 ? 's' : ''}</span>
+                          <span className={`month-balance ${monthBalance >= 0 ? 'pos' : 'neg'}`}>
+                            {monthBalance >= 0 ? '+' : '-'}{formatDuration(Math.abs(monthBalance))}
+                          </span>
+                        </button>
+                        {!isCollapsed && monthEntries.map((entry) => (
+                          <EntryCard
+                            key={entry.id}
+                            entry={entry}
+                            dailyTargetMinutes={settings.dailyTargetMinutes}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>

@@ -120,7 +120,11 @@ export function ManualEntryForm({
         <span>Total calculado</span>
         <strong style={{ color: worked > 0 ? 'var(--positive)' : 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
           {workedDisplay}
-          {worked > 0 && balanceDisplay !== '—' ? ` (${balanceDisplay})` : ''}
+          {worked > 0 && balanceDisplay !== '—' ? (
+            <span style={{ color: balanceDisplay.startsWith('-') ? 'var(--negative)' : 'var(--positive)' }}>
+              {' '}({balanceDisplay})
+            </span>
+          ) : ''}
         </strong>
       </div>
 
@@ -128,16 +132,18 @@ export function ManualEntryForm({
         <p style={{ color: 'var(--negative)', fontSize: '13px', marginBottom: '12px' }}>{error}</p>
       )}
 
-      <button type="submit" className="btn-primary btn-start" style={{ width: '100%', justifyContent: 'center' }}>
-        <i className="ti ti-check" />
-        {isEditing ? 'Salvar alterações' : 'Salvar entrada'}
-      </button>
-
-      {onCancel && (
-        <button type="button" className="btn-secondary" onClick={onCancel}>
-          Cancelar
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <button type="submit" className="btn-primary btn-start" style={{ width: '100%', justifyContent: 'center' }}>
+          <i className="ti ti-check" />
+          {isEditing ? 'Salvar alterações' : 'Salvar entrada'}
         </button>
-      )}
+
+        {onCancel && (
+          <button type="button" className="btn-secondary" onClick={onCancel}>
+            Cancelar
+          </button>
+        )}
+      </div>
     </form>
   )
 }

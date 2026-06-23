@@ -168,6 +168,7 @@ export interface WeekBarDay {
   isPositive: boolean
   isToday: boolean
   workedMinutes: number
+  hasOvertime: boolean
 }
 
 export function getWeekBars(
@@ -186,13 +187,15 @@ export function getWeekBars(
       (sum, e) => sum + calcWorkedMinutes(e.startTime, e.endTime, e.lunchMinutes),
       0,
     )
-    const fillPercent = dailyTargetMinutes > 0 ? Math.min((worked / dailyTargetMinutes) * 100, 100) : 0
+    const fillPercent = dailyTargetMinutes > 0 ? (worked / dailyTargetMinutes) * 100 : 0
+    const hasOvertime = fillPercent > 100
     bars.push({
       label: getWeekdayShort(dateStr),
       fillPercent,
       isPositive: worked >= dailyTargetMinutes,
       isToday: dateStr === today,
       workedMinutes: worked,
+      hasOvertime,
     })
   }
 
