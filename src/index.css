@@ -66,14 +66,15 @@ html, body, #root { height: 100%; overflow: hidden; }
 /* ── LAYOUT SHELL ─────────────────────────── */
 .app {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   padding: 16px;
   background: var(--bg);
+  overflow: hidden;
 }
 
 .shell {
   display: flex;
-  min-height: 680px;
+  height: 100%;
   background: var(--bg);
   border-radius: var(--r-xl);
   overflow: hidden;
@@ -82,6 +83,19 @@ html, body, #root { height: 100%; overflow: hidden; }
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-panel {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .sidebar {
@@ -135,16 +149,8 @@ html, body, #root { height: 100%; overflow: hidden; }
   color: var(--ink);
 }
 
-.content {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
 .tab-panel {
   display: none;
-  flex: 1;
-  overflow-y: auto;
   padding: 28px 28px 20px;
 }
 .tab-panel.active { display: block; }
