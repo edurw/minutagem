@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTimeBank } from './hooks/useTimeBank'
+import { AuthProvider } from './context/AuthContext'
 import { LiveSessionCard } from './components/LiveSessionCard'
 import { ManualEntryForm } from './components/ManualEntryForm'
 import { WeekBarChart } from './components/WeekBarChart'
 import { MonthCalendar } from './components/MonthCalendar'
 import { EntryCard } from './components/EntryCard'
+import { AuthModal } from './components/AuthModal'
+import { UserAvatar } from './components/UserAvatar'
+import { ProfileSection } from './components/ProfileSection'
 import {
   calcWorkedMinutes,
   exportEntriesToCsv,
@@ -43,6 +47,7 @@ function App() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   // Theme — use React state so checkbox stays in sync
   const [isDark, setIsDark] = useState(() => {
@@ -154,6 +159,7 @@ function App() {
   }
 
   return (
+    <AuthProvider>
     <div className="app">
       <div className="shell">
         {/* Sidebar */}
@@ -214,17 +220,35 @@ function App() {
             <i className="ti ti-settings" />
             Configuração
           </div>
+
+          {/* User avatar at bottom of sidebar */}
+          <div className="sidebar-user">
+            <UserAvatar
+              variant="sidebar"
+              onClick={() => {
+                if (activeTab !== 'configuracao') setActiveTab('configuracao')
+                setShowAuthModal(true)
+              }}
+            />
+          </div>
         </div>
 
         {/* Content */}
         <div className="content">
 
+          {/* Shared topbar — visible on all tabs */}
+          <div className="topbar">
+            <h1>{activeTab === 'exibicao' ? 'Visão geral' : activeTab === 'registro' ? 'Registrar horas' : activeTab === 'historico' ? 'Histórico' : 'Configuração'}</h1>
+            <div className="topbar-right">
+              {activeTab === 'exibicao' && (
+                <span className="topbar-date">{todayFormatted}</span>
+              )}
+              <UserAvatar variant="topbar" onClick={() => setShowAuthModal(true)} />
+            </div>
+          </div>
+
           {/* ── TAB: EXIBIÇÃO ── */}
           <div className={`tab-panel${activeTab === 'exibicao' ? ' active' : ''}`}>
-            <div className="topbar">
-              <h1>Visão geral</h1>
-              <span className="topbar-date">{todayFormatted}</span>
-            </div>
             <div style={{ padding: '0 24px 20px' }}>
               <div className="balance-hero">
                 <div className="balance-label">Saldo acumulado</div>
@@ -270,9 +294,6 @@ function App() {
 
           {/* ── TAB: REGISTRO ── */}
           <div className={`tab-panel${activeTab === 'registro' ? ' active' : ''}`}>
-            <div className="topbar">
-              <h1>Registrar horas</h1>
-            </div>
             <div style={{ padding: '12px 24px 20px' }}>
               <div className="mode-toggle">
                 <button
@@ -329,9 +350,6 @@ function App() {
 
           {/* ── TAB: HISTÓRICO ── */}
           <div className={`tab-panel${activeTab === 'historico' ? ' active' : ''}`}>
-            <div className="topbar">
-              <h1>Histórico</h1>
-            </div>
             <div style={{ padding: '12px 24px 20px' }}>
               {entries.length > 0 && (
                 <div className="summary-strip">
@@ -390,10 +408,10 @@ function App() {
 
           {/* ── TAB: CONFIGURAÇÃO ── */}
           <div className={`tab-panel${activeTab === 'configuracao' ? ' active' : ''}`}>
-            <div className="topbar">
-              <h1>Configuração</h1>
-            </div>
             <div style={{ padding: '12px 24px 20px' }}>
+
+              {/* Perfil */}
+              <ProfileSection />
 
               {/* Aparência */}
               <div className="settings-section">
@@ -569,7 +587,13 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </div>
+    </AuthProvider>
   )
 }
 
