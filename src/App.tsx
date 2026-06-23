@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTimeBank } from './hooks/useTimeBank'
+import { ScrollArea } from './components/ScrollArea'
 import { AuthProvider } from './context/AuthContext'
 import { LiveSessionCard } from './components/LiveSessionCard'
 import { ManualEntryForm } from './components/ManualEntryForm'
@@ -246,6 +247,8 @@ function App() {
               <UserAvatar variant="topbar" onClick={() => setShowAuthModal(true)} />
             </div>
           </div>
+
+          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
 
           {/* ── TAB: EXIBIÇÃO ── */}
           <div className={`tab-panel${activeTab === 'exibicao' ? ' active' : ''}`}>
@@ -526,6 +529,8 @@ function App() {
               </div>
             </div>
           </div>
+
+        </ScrollArea>
 
         </div>
 
