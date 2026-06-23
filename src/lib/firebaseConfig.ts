@@ -11,12 +11,12 @@ import { getStorage, type FirebaseStorage } from 'firebase/storage'
 // PASSO 5: Vá em Configurações > Adicionar app Web e cole o firebaseConfig aqui
 // ============================================================
 const firebaseConfig = {
-  apiKey: "COLE_SUA_API_KEY_AQUI",
-  authDomain: "COLE_SEU_AUTH_DOMAIN_AQUI",
-  projectId: "COLE_SEU_PROJECT_ID_AQUI",
-  storageBucket: "COLE_SEU_STORAGE_BUCKET_AQUI",
-  messagingSenderId: "COLE_SEU_MESSAGING_SENDER_ID_AQUI",
-  appId: "COLE_SEU_APP_ID_AQUI"
+  apiKey: "AIzaSyAK8CX9Ocb5rT8G7GL3oXsJqrmm-PqZv7s",
+  authDomain: "minutagem-57a8f.firebaseapp.com",
+  projectId: "minutagem-57a8f",
+  storageBucket: "minutagem-57a8f.firebasestorage.app",
+  messagingSenderId: "237536129374",
+  appId: "1:237536129374:web:061990dec3d33ce40d5fcf"
 }
 
 let app: FirebaseApp
