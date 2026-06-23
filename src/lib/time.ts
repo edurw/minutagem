@@ -127,3 +127,95 @@ export function isValidEntry(
   }
   return null
 }
+
+const WEEKDAY_SHORT = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+const WEEKDAY_FULL = [
+  'domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado',
+]
+
+export function getWeekdayShort(dateIso: string): string {
+  const d = new Date(dateIso + 'T12:00:00')
+  return WEEKDAY_SHORT[d.getDay()]
+}
+
+export function getWeekdayFull(dateIso: string): string {
+  const d = new Date(dateIso + 'T12:00:00')
+  return WEEKDAY_FULL[d.getDay()]
+}
+
+export function formatTargetDisplay(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return `= ${h}h ${String(m).padStart(2, '0')}m`
+}
+
+export function getMonthYear(dateIso: string): string {
+  const [year, month] = dateIso.split('-')
+  const d = new Date(Number(year), Number(month) - 1, 1)
+  return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+}
+
+export function getDayMonth(dateIso: string): string {
+  const [year, month, day] = dateIso.split('-')
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
+  return d.toLocaleDateString('pt-BR', { day: 'numeric' }) + ' ' +
+    d.toLocaleDateString('pt-BR', { month: 'short' })
+}
+
+export interface WeekBarDay {
+  label: string
+  fillPercent: number
+  isPositive: boolean
+  isToday: boolean
+  workedMinutes: number
+}
+
+export function getWeekBars(
+  entries: { date: string; startTime: string; endTime: string; lunchMinutes: number }[],
+  dailyTargetMinutes: number,
+): WeekBarDay[] {
+  const today = getTodayDate()
+  const bars: WeekBarDay[] = []
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const dayEntries = entries.filter((e) => e.date === dateStr)
+    const worked = dayEntries.reduce(
+      (sum, e) => sum + calcWorkedMinutes(e.startTime, e.endTime, e.lunchMinutes),
+      0,
+    )
+    const fillPercent = dailyTargetMinutes > 0 ? Math.min((worked / dailyTargetMinutes) * 100, 100) : 0
+    bars.push({
+      label: getWeekdayShort(dateStr),
+      fillPercent,
+      isPositive: worked >= dailyTargetMinutes,
+      isToday: dateStr === today,
+      workedMinutes: worked,
+    })
+  }
+
+  return bars
+}
+
+export function exportEntriesToCsv(
+  entries: { date: string; startTime: string; endTime: string; lunchMinutes: number }[],
+): void {
+  const header = 'Data,Entrada,Saída,Almoço (min),Trabalhado\n'
+  const rows = entries
+    .map((e) => {
+      const worked = calcWorkedMinutes(e.startTime, e.endTime, e.lunchMinutes)
+      return `${e.date},${e.startTime},${e.endTime},${e.lunchMinutes},${worked}`
+    })
+    .join('\n')
+  const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `minutagem-${getTodayDate()}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
