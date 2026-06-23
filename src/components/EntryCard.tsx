@@ -25,8 +25,7 @@ export function EntryCard({ entry, dailyTargetMinutes, onEdit, onDelete }: Entry
         {entry.startTime}
         <i className="ti ti-logout" />
         {entry.endTime}
-        <i className="ti ti-coffee" />
-        {entry.lunchMinutes}m
+        <span><i className="ti ti-coffee" /> {entry.lunchMinutes}m</span>
       </div>
       <div className={`entry-delta ${dayBalance >= 0 ? 'pos' : 'neg'}`}>
         {dayBalance >= 0 ? '+' : '-'}{formatDuration(Math.abs(dayBalance))}

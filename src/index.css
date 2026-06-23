@@ -485,6 +485,7 @@ html, body, #root { height: 100%; overflow: hidden; }
   align-items: center;
   gap: 12px;
   transition: background 0.25s, border-color 0.25s;
+  flex-wrap: wrap;
 }
 .entry-date { min-width: 90px; }
 .entry-date-main {
@@ -505,6 +506,7 @@ html, body, #root { height: 100%; overflow: hidden; }
   color: var(--muted);
 }
 .entry-times i { font-size: 14px; }
+.entry-times span { white-space: nowrap; }
 .entry-delta {
   font-size: 14px;
   font-weight: 700;
@@ -729,9 +731,14 @@ html, body, #root { height: 100%; overflow: hidden; }
     z-index: 100;
   }
   .balance-number { font-size: 52px; }
-  .stats-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
   .stats-grid .stat-card:last-child { grid-column: 1 / -1; }
   .session-time { font-size: 40px; }
+  .entry-card { flex-wrap: wrap; gap: 8px; }
+  .entry-date { min-width: 0; flex-shrink: 1; }
+  .entry-times { min-width: 0; flex-wrap: wrap; }
+  .entry-delta { min-width: 0; }
+  .entry-actions { margin-left: auto; }
 }
 
 /* ── UTILITÁRIOS ─────────────────────────── */
