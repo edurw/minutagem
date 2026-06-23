@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <style>
+    .bg { fill: #1A1F2E; }
+    .stroke { fill: none; stroke: #4F7DF3; stroke-width: 2; stroke-linecap: round; }
+    .fill-accent { fill: #4F7DF3; opacity: 0.15; }
+    .dot { fill: #34D399; }
+    .bar { fill: #34D399; opacity: 0.35; }
+    .bar-fill { fill: #34D399; }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #E8ECF5; }
+      .stroke { stroke: #2563EB; }
+      .fill-accent { fill: #2563EB; }
+      .dot { fill: #059669; }
+      .bar { fill: #059669; opacity: 0.3; }
+      .bar-fill { fill: #059669; }
+    }
+  </style>
+  <rect class="bg" x="4" y="4" width="40" height="40" rx="10"/>
+  <circle class="stroke" cx="24" cy="22" r="12"/>
+  <line class="stroke" x1="24" y1="22" x2="24" y2="12"/>
+  <line class="stroke" x1="24" y1="22" x2="32" y2="27"/>
+  <path class="fill-accent" d="M24 22 L24 12 A10 10 0 0 1 32 27 Z"/>
+  <circle class="dot" cx="24" cy="22" r="2"/>
+  <rect class="bar" x="10" y="37" width="28" height="3" rx="1.5"/>
+  <rect class="bar-fill" x="10" y="37" width="19" height="3" rx="1.5"/>
+</svg>

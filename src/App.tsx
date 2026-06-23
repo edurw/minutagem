@@ -10,7 +10,6 @@ import {
   exportEntriesToCsv,
   formatDuration,
   formatTargetDisplay,
-  getMonthYear,
   getNowTime,
   getTodayDate,
   getWeekBars,
@@ -81,10 +80,6 @@ function App() {
     const d = new Date()
     return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   }, [])
-
-  const monthYear = entries.length > 0
-    ? getMonthYear(entries[0].date)
-    : getMonthYear(getTodayDate())
 
   const periodBalance = useMemo(() => {
     return entries.reduce((sum, e) => {
@@ -340,7 +335,7 @@ function App() {
             <div style={{ padding: '12px 24px 20px' }}>
               {entries.length > 0 && (
                 <div className="summary-strip">
-                  <span>{monthYear} · {entries.length} registro{entries.length !== 1 ? 's' : ''}</span>
+                  <span>{entries[0].date.slice(0, 4)} · {entries.length} registro{entries.length !== 1 ? 's' : ''}</span>
                   <strong style={{ color: periodBalance >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
                     {periodBalance >= 0 ? '+' : '-'}{formatDuration(Math.abs(periodBalance))} no período
                   </strong>
