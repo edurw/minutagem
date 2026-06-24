@@ -22,8 +22,7 @@ import {
   getDoc,
   updateDoc,
 } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { auth, db, storage } from '../lib/firebaseConfig'
+import { auth, db } from '../lib/firebaseConfig'
 import type { UserProfile } from '../types'
 
 interface AuthContextValue {
@@ -35,7 +34,6 @@ interface AuthContextValue {
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   updateProfile: (data: Partial<Pick<UserProfile, 'name'>>) => Promise<void>
-  uploadPhoto: (file: File) => Promise<string>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -128,20 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchProfile(user.uid)
   }
 
-  const uploadPhoto = async (file: File): Promise<string> => {
-    if (!user) throw new Error('Usuário não logado')
-    const storageRef = ref(storage, `profiles/${user.uid}/avatar.jpg`)
-    await uploadBytes(storageRef, file)
-    const url = await getDownloadURL(storageRef)
-    await updateDoc(doc(db, 'users', user.uid), {
-      photoURL: url,
-      updatedAt: new Date().toISOString(),
-    })
-    await firebaseUpdateProfile(user, { photoURL: url })
-    await fetchProfile(user.uid)
-    return url
-  }
-
   return (
     <AuthContext.Provider
       value={{
@@ -153,7 +137,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithGoogle,
         signOut,
         updateProfile,
-        uploadPhoto,
       }}
     >
       {children}

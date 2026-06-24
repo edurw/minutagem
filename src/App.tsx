@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTimeBank } from './hooks/useTimeBank'
 import { ScrollArea } from './components/ScrollArea'
-import { AuthProvider } from './context/AuthContext'
 import { LiveSessionCard } from './components/LiveSessionCard'
 import { ManualEntryForm } from './components/ManualEntryForm'
 import { WeekBarChart } from './components/WeekBarChart'
@@ -160,7 +159,6 @@ function App() {
   }
 
   return (
-    <AuthProvider>
     <div className="app">
       <div className="shell">
         {/* Sidebar */}
@@ -598,7 +596,6 @@ function App() {
         <AuthModal onClose={() => setShowAuthModal(false)} />
       )}
     </div>
-    </AuthProvider>
   )
 }
 
